@@ -26,6 +26,7 @@ export class SaleService {
       total: saleData.total,
       amountPaid: saleData.amountPaid,
       change: saleData.change,
+      paymentMethod: saleData.paymentMethod, // nuevo campo
     });
 
     // Guardamos la venta

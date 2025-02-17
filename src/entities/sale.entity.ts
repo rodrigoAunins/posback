@@ -24,6 +24,9 @@ export class Sale {
   @Column('float')
   change: number;
 
+  @Column({ type: 'varchar', length: 50 })
+  paymentMethod: string;  // nuevo campo
+
   // Relación con SaleItem
   @OneToMany(() => SaleItem, (item) => item.sale, { cascade: true })
   items: SaleItem[];
