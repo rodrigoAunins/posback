@@ -5,9 +5,9 @@ import * as bodyParser from 'body-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Habilitar CORS con varias opciones explícitas
+  // Habilitar CORS con configuración mejorada
   app.enableCors({
-    origin: '*', // Permitir desde cualquier origen
+    origin: ['https://tudominio.com', 'https://luxury-seaturtle.static.domains'], // Cambiar esto en producción
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
@@ -16,10 +16,19 @@ async function bootstrap() {
       'Origin',
       'X-Requested-With',
     ],
-    // credentials: true, // si quieres enviar cookies o auth con cross-site
+    credentials: true, // Importante si usas cookies o JWT con credenciales
   });
 
-  // Aumentar límite de payload
+  // Middleware de seguridad: Content-Security-Policy (CSP)
+  app.use((req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; connect-src 'self' https://posback-production.up.railway.app"
+    );
+    next();
+  });
+
+  // Permitir grandes volúmenes de datos en request body
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
