@@ -92,57 +92,57 @@ export class SyncService {
       }
     }
 
-    // 5) Ventas
-    if (Array.isArray(data.sales)) {
-      for (const s of data.sales) {
-        const saleId = s.id?.toString();
-        if (!saleId) continue;
-        let found = await this.saleRepo.findOne({ where: { id: saleId } });
-        if (!found) {
-          // Crear la venta
-          const sale = this.saleRepo.create({
-            id: saleId,
-            date: s.date,
-            cashierId: s.cashierId?.toString(),
-            sessionId: s.sessionId?.toString(),
-            total: s.total,
-            amountPaid: s.amountPaid,
-            change: s.change,
-          });
-          const savedSale = await this.saleRepo.save(sale);
+// 5) Ventas
+if (Array.isArray(data.sales)) {
+  for (const s of data.sales) {
+    const saleId = s.id; // Suponemos que s.id ya viene en el tipo correcto
+    if (saleId == null) continue;
+    let found = await this.saleRepo.findOne({ where: { id: saleId } });
+    if (!found) {
+      // Crear la venta, incluyendo paymentMethod. Si no viene, asigna un valor predeterminado.
+      const sale = this.saleRepo.create({
+        id: saleId,
+        date: s.date,
+        cashierId: s.cashierId,
+        sessionId: s.sessionId,
+        total: s.total,
+        amountPaid: s.amountPaid,
+        change: s.change,
+        paymentMethod: s.paymentMethod || 'efectivo'  // Valor por defecto, por ejemplo
+      });
+      const savedSale = await this.saleRepo.save(sale);
 
-          // Crear items
-          if (Array.isArray(s.items)) {
-            for (const it of s.items) {
-              const saleItem = this.saleItemRepo.create({
-                productId: it.productId?.toString(),
-                productName: it.productName,
-                price: it.price,
-                originalPrice: it.originalPrice,
-                quantity: it.quantity,
-                sale: savedSale,
-              });
-              await this.saleItemRepo.save(saleItem);
-            }
-          }
-        } else {
-          // Actualizar la venta
-          this.saleRepo.merge(found, {
-            date: s.date,
-            cashierId: s.cashierId?.toString(),
-            sessionId: s.sessionId?.toString(),
-            total: s.total,
-            amountPaid: s.amountPaid,
-            change: s.change,
+      // Crear items
+      if (Array.isArray(s.items)) {
+        for (const it of s.items) {
+          const saleItem = this.saleItemRepo.create({
+            productId: it.productId,
+            productName: it.productName,
+            price: it.price,
+            originalPrice: it.originalPrice,
+            quantity: it.quantity,
+            sale: savedSale,
           });
-          await this.saleRepo.save(found);
-
-          // Items: si quisieras actualizarlos, necesitas más lógica (IDs de items, etc.)
-          // Ejemplo simple: no tocamos items existentes
-          // (Podrías, por ej, borrarlos y recrearlos, o actualizarlos con ID.)
+          await this.saleItemRepo.save(saleItem);
         }
       }
+    } else {
+      // Actualizar la venta incluyendo paymentMethod
+      this.saleRepo.merge(found, {
+        date: s.date,
+        cashierId: s.cashierId,
+        sessionId: s.sessionId,
+        total: s.total,
+        amountPaid: s.amountPaid,
+        change: s.change,
+        paymentMethod: s.paymentMethod || 'efectivo'
+      });
+      await this.saleRepo.save(found);
+      // Nota: Para los items, podrías necesitar lógica adicional según cómo quieras actualizarlos.
     }
+  }
+}
+
 
     // **TWO-WAY**: Retornar toda la data que hay en la BD para que el cliente se actualice
     const allUsers = await this.userRepo.find();
