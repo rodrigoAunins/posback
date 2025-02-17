@@ -1,13 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Habilitar CORS con configuración mejorada
+  // Configurar CORS correctamente
   app.enableCors({
-    origin: ['https://tudominio.com', 'https://luxury-seaturtle.static.domains'], // Cambiar esto en producción
+    origin: '*', // Cambiar a ['http://localhost:4200', 'https://tu-dominio.com'] en producción
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
@@ -16,17 +17,15 @@ async function bootstrap() {
       'Origin',
       'X-Requested-With',
     ],
-    credentials: true, // Importante si usas cookies o JWT con credenciales
+    credentials: true, // Si usas cookies o auth con credenciales cruzadas
   });
 
-  // Middleware de seguridad: Content-Security-Policy (CSP)
-  app.use((req, res, next) => {
-    res.setHeader(
-      'Content-Security-Policy',
-      "default-src 'self'; connect-src 'self' https://posback-production.up.railway.app"
-    );
-    next();
-  });
+  // Middleware de seguridad - Helmet (Desactiva CSP temporalmente si hay problemas)
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Deshabilita CSP para evitar bloqueos (ajustar en producción)
+    })
+  );
 
   // Permitir grandes volúmenes de datos en request body
   app.use(bodyParser.json({ limit: '50mb' }));
