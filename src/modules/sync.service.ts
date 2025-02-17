@@ -21,10 +21,10 @@ export class SyncService {
 
   /**
    * Sincroniza (two-way):
-   *  1) Recibe datos del cliente (offline) y los crea/actualiza en la BD.
-   *     Además, si el registro viene marcado como eliminado (deleted: true), se elimina.
-   *  2) Retorna toda la data existente en la BD (users, categories, brands, products, sales)
-   *     para que el cliente se actualice localmente.
+   * 1) Recibe datos del cliente y crea/actualiza en la BD.
+   *    Si el registro viene marcado como eliminado (deleted: true),
+   *    se actualiza la bandera en la BD (soft delete) en lugar de recrearlo.
+   * 2) Retorna toda la data existente (excluyendo los eliminados) para que el cliente se actualice.
    */
   async syncAll(data: any) {
     // 1) Sincronizar Usuarios
@@ -32,14 +32,15 @@ export class SyncService {
       for (const u of data.users) {
         const userId = u.id?.toString();
         if (!userId) continue;
+        let found = await this.userRepo.findOne({ where: { id: userId } });
         if (u.deleted) {
-          const found = await this.userRepo.findOne({ where: { id: userId } });
-          if (found) {
-            await this.userRepo.remove(found);
+          if (found && !found.deleted && new Date(u.updatedAt) > new Date(found.updatedAt)) {
+            found.deleted = true;
+            found.updatedAt = u.updatedAt;
+            await this.userRepo.save(found);
           }
           continue;
         }
-        let found = await this.userRepo.findOne({ where: { id: userId } });
         if (!found) {
           await this.userRepo.save({ ...u, id: userId });
         } else {
@@ -57,14 +58,15 @@ export class SyncService {
       for (const c of data.categories) {
         const catId = c.id?.toString();
         if (!catId) continue;
+        let found = await this.categoryRepo.findOne({ where: { id: catId } });
         if (c.deleted) {
-          const found = await this.categoryRepo.findOne({ where: { id: catId } });
-          if (found) {
-            await this.categoryRepo.remove(found);
+          if (found && !found.deleted && new Date(c.updatedAt) > new Date(found.updatedAt)) {
+            found.deleted = true;
+            found.updatedAt = c.updatedAt;
+            await this.categoryRepo.save(found);
           }
           continue;
         }
-        let found = await this.categoryRepo.findOne({ where: { id: catId } });
         if (!found) {
           await this.categoryRepo.save({ ...c, id: catId });
         } else {
@@ -82,14 +84,15 @@ export class SyncService {
       for (const b of data.brands) {
         const brandId = b.id?.toString();
         if (!brandId) continue;
+        let found = await this.brandRepo.findOne({ where: { id: brandId } });
         if (b.deleted) {
-          const found = await this.brandRepo.findOne({ where: { id: brandId } });
-          if (found) {
-            await this.brandRepo.remove(found);
+          if (found && !found.deleted && new Date(b.updatedAt) > new Date(found.updatedAt)) {
+            found.deleted = true;
+            found.updatedAt = b.updatedAt;
+            await this.brandRepo.save(found);
           }
           continue;
         }
-        let found = await this.brandRepo.findOne({ where: { id: brandId } });
         if (!found) {
           await this.brandRepo.save({ ...b, id: brandId });
         } else {
@@ -107,17 +110,19 @@ export class SyncService {
       for (const p of data.products) {
         const prodId = p.id?.toString();
         if (!prodId) continue;
+        let found = await this.productRepo.findOne({ where: { id: prodId } });
         if (p.deleted) {
-          const found = await this.productRepo.findOne({ where: { id: prodId } });
-          if (found) {
-            await this.productRepo.remove(found);
+          if (found && !found.deleted && new Date(p.updatedAt) > new Date(found.updatedAt)) {
+            found.deleted = true;
+            found.updatedAt = p.updatedAt;
+            await this.productRepo.save(found);
           }
           continue;
         }
-        let found = await this.productRepo.findOne({ where: { id: prodId } });
         if (!found) {
           await this.productRepo.save({ ...p, id: prodId });
         } else {
+          if (found.deleted) { continue; }
           if (new Date(p.updatedAt) > new Date(found.updatedAt)) {
             this.productRepo.merge(found, p);
             found.id = prodId;
@@ -132,7 +137,6 @@ export class SyncService {
       for (const s of data.sales) {
         const saleId = s.id;
         if (saleId == null) continue;
-        // Normalmente las ventas no se eliminan, pero se actualizan si corresponde
         let found = await this.saleRepo.findOne({ where: { id: saleId } });
         if (!found) {
           const sale = this.saleRepo.create({
@@ -174,17 +178,15 @@ export class SyncService {
               updatedAt: s.updatedAt
             });
             await this.saleRepo.save(found);
-            // Para los items se podría implementar lógica similar si se requiere actualizar
           }
         }
       }
     }
 
-    // Retornar toda la data de la BD para que el cliente se actualice
-    const allUsers = await this.userRepo.find();
-    const allCategories = await this.categoryRepo.find();
-    const allBrands = await this.brandRepo.find();
-    const allProducts = await this.productRepo.find();
+    const allUsers = await this.userRepo.find({ where: { deleted: false } });
+    const allCategories = await this.categoryRepo.find({ where: { deleted: false } });
+    const allBrands = await this.brandRepo.find({ where: { deleted: false } });
+    const allProducts = await this.productRepo.find({ where: { deleted: false } });
     const allSales = await this.saleRepo.find({ relations: ['items'] });
 
     return {
