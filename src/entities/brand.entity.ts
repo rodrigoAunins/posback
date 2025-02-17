@@ -5,7 +5,6 @@ export class Brand {
   @PrimaryColumn({ type: 'varchar', length: 50 })
   id: string;
 
-  // Relación simplificada a Category por ID
   @Column({ type: 'varchar', length: 50 })
   categoryId: string;
 
@@ -14,4 +13,10 @@ export class Brand {
 
   @Column({ type: 'text', nullable: true })
   image?: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
+
+  @Column({ type: 'boolean', default: false })
+  deleted: boolean;
 }

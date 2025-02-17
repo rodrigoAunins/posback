@@ -28,4 +28,10 @@ export class Product {
 
   @Column({ type: 'text', nullable: true })
   image?: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
+
+  @Column({ type: 'boolean', default: false })
+  deleted: boolean;
 }

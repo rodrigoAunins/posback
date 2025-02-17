@@ -25,9 +25,11 @@ export class Sale {
   change: number;
 
   @Column({ type: 'varchar', length: 50 })
-  paymentMethod: string;  // nuevo campo
+  paymentMethod: string;
 
-  // Relación con SaleItem
   @OneToMany(() => SaleItem, (item) => item.sale, { cascade: true })
   items: SaleItem[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
 }
