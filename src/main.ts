@@ -7,18 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Configurar CORS correctamente
-  app.enableCors({
-    origin: '*', // Cambiar a ['http://localhost:4200', 'https://tu-dominio.com'] en producción
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'Accept',
-      'Origin',
-      'X-Requested-With',
-    ],
-    credentials: true, // Si usas cookies o auth con credenciales cruzadas
-  });
+  app.enableCors();
 
   // Middleware de seguridad - Helmet (Desactiva CSP temporalmente si hay problemas)
   app.use(
@@ -31,7 +20,7 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 8080;
   await app.listen(port, () => {
     console.log(`Nest backend is running on port ${port}`);
   });
