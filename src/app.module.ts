@@ -24,7 +24,7 @@ import { SyncModule } from './modules/sync.module';
       type: 'postgres',
 
       // REEMPLAZA AQUÍ con los datos REALES
-      host: 'postgresql://postgres:cMDPLrMbRYTkCISdNYjvFERgEifVSZrI@postgres.railway.internal:5432/railway',  // Ejemplo
+      host: 'postgres.railway.internal',  // Ejemplo
       port: 5432,                                     // Puede variar
       username: 'postgres',
       password: 'cMDPLrMbRYTkCISdNYjvFERgEifVSZrI',
