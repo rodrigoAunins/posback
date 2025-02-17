@@ -19,26 +19,34 @@ import { SyncModule } from './modules/sync.module';
 
 @Module({
   imports: [
-    // Configuración TypeORM Hardcodeada para Railway
+    // Conexión HARDCODEADA a Postgres en Railway
     TypeOrmModule.forRoot({
       type: 'postgres',
 
-      // REEMPLAZA AQUÍ con los datos REALES
+      // PON tus datos REALES de Railway:
       host: 'postgres.railway.internal',  // Ejemplo
       port: 5432,                                     // Puede variar
       username: 'postgres',
       password: 'cMDPLrMbRYTkCISdNYjvFERgEifVSZrI',
       database: 'railway',
 
-      // Activar SSL en Railway (o algunos servicios), a veces se necesita
+      // Si tu DB requiere SSL, activa:
       ssl: {
         rejectUnauthorized: false,
       },
 
-      entities: [User, Category, Brand, Product, Sale, SaleItem],
+      entities: [
+        User,
+        Category,
+        Brand,
+        Product,
+        Sale,
+        SaleItem,
+      ],
       synchronize: true, // en prod se suele desactivar
     }),
 
+    // Módulos
     UserModule,
     CategoryModule,
     BrandModule,
