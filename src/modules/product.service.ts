@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
@@ -7,30 +7,38 @@ import { Product } from '../entities/product.entity';
 export class ProductService {
   constructor(
     @InjectRepository(Product)
-    private productRepo: Repository<Product>,
+    private readonly productRepository: Repository<Product>,
   ) {}
 
-  findAll() {
-    return this.productRepo.find();
+  findAll(): Promise<Product[]> {
+    return this.productRepository.find();
   }
 
-  create(data: Partial<Product>) {
-    const product = this.productRepo.create(data);
-    return this.productRepo.save(product);
+  async create(data: Partial<Product>): Promise<Product> {
+    const product = this.productRepository.create(data);
+    if (!product.id) {
+      product.id = Date.now().toString();
+    }
+    product.updatedAt = new Date();
+    return this.productRepository.save(product);
   }
 
-  // Cambia a 'string'
-  async update(id: string, data: Partial<Product>) {
-    // OJO, TypeORM 'update()' con id como string
-    // Si 'id' es la PK de tipo VARCHAR, usas:
-    await this.productRepo.update({ id }, data);
-
-    // Y luego lo buscas:
-    return this.productRepo.findOne({ where: { id } });
+  async update(id: string, data: Partial<Product>): Promise<Product> {
+    const product = await this.productRepository.findOne({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product not found with id ${id}`);
+    }
+    Object.assign(product, data);
+    product.updatedAt = new Date();
+    return this.productRepository.save(product);
   }
 
-  // También 'string'
-  delete(id: string) {
-    return this.productRepo.delete({ id });
+  async delete(id: string): Promise<boolean> {
+    const product = await this.productRepository.findOne({ where: { id } });
+    if (!product) {
+      return false;
+    }
+    await this.productRepository.remove(product);
+    return true;
   }
 }

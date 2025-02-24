@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
@@ -7,19 +7,38 @@ import { Category } from '../entities/category.entity';
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
-    private categoryRepo: Repository<Category>,
+    private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  findAll() {
-    return this.categoryRepo.find();
+  findAll(): Promise<Category[]> {
+    return this.categoryRepository.find();
   }
 
-  create(data: Partial<Category>) {
-    const category = this.categoryRepo.create(data);
-    return this.categoryRepo.save(category);
+  async create(data: Partial<Category>): Promise<Category> {
+    const category = this.categoryRepository.create(data);
+    if (!category.id) {
+      category.id = Date.now().toString();
+    }
+    category.updatedAt = new Date();
+    return this.categoryRepository.save(category);
   }
 
-  delete(id: number) {
-    return this.categoryRepo.delete(id);
+  async update(id: string, data: Partial<Category>): Promise<Category> {
+    const category = await this.categoryRepository.findOne({ where: { id } });
+    if (!category) {
+      throw new NotFoundException(`Category not found with id ${id}`);
+    }
+    Object.assign(category, data);
+    category.updatedAt = new Date();
+    return this.categoryRepository.save(category);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const category = await this.categoryRepository.findOne({ where: { id } });
+    if (!category) {
+      return false;
+    }
+    await this.categoryRepository.remove(category);
+    return true;
   }
 }

@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, Put, NotFoundException } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from '../entities/product.entity';
 
 @Controller('products')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(private readonly productService: ProductService) {}
 
   @Get()
   findAll(): Promise<Product[]> {
@@ -12,19 +12,21 @@ export class ProductController {
   }
 
   @Post()
-  create(@Body() data: Partial<Product>) {
+  create(@Body() data: Partial<Product>): Promise<Product> {
     return this.productService.create(data);
   }
 
-  // ← Aquí cambia id: number => id: string
   @Put(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Product>) {
+  update(@Param('id') id: string, @Body() data: Partial<Product>): Promise<Product> {
     return this.productService.update(id, data);
   }
 
-  // ← Y lo mismo acá
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.productService.delete(id);
+  async delete(@Param('id') id: string) {
+    const result = await this.productService.delete(id);
+    if (!result) {
+      throw new NotFoundException(`Product not found with id ${id}`);
+    }
+    return { deleted: true };
   }
 }

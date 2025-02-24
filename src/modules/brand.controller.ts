@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Delete, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, Put, NotFoundException } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { Brand } from '../entities/brand.entity';
 
 @Controller('brands')
 export class BrandController {
-  constructor(private brandService: BrandService) {}
+  constructor(private readonly brandService: BrandService) {}
 
   @Get()
   findAll(): Promise<Brand[]> {
@@ -12,12 +12,21 @@ export class BrandController {
   }
 
   @Post()
-  create(@Body() data: Partial<Brand>) {
+  create(@Body() data: Partial<Brand>): Promise<Brand> {
     return this.brandService.create(data);
   }
 
+  @Put(':id')
+  update(@Param('id') id: string, @Body() data: Partial<Brand>): Promise<Brand> {
+    return this.brandService.update(id, data);
+  }
+
   @Delete(':id')
-  delete(@Param('id') id: number) {
-    return this.brandService.delete(id);
+  async delete(@Param('id') id: string) {
+    const result = await this.brandService.delete(id);
+    if (!result) {
+      throw new NotFoundException(`Brand not found with id ${id}`);
+    }
+    return { deleted: true };
   }
 }
