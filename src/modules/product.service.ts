@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
+import { OrderMap } from '../common/types';
 
 @Injectable()
 export class ProductService {
@@ -10,8 +11,12 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  findAll(): Promise<Product[]> {
-    return this.productRepository.find();
+  findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Product[]> {
+    const options: any = {};
+    if (limit) options.take = limit;
+    if (offset) options.skip = offset;
+    if (orderOptions) options.order = orderOptions;
+    return this.productRepository.find(options);
   }
 
   async create(data: Partial<Product>): Promise<Product> {

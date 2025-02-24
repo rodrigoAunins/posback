@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
+import { OrderMap } from '../common/types';
 
 @Injectable()
 export class CategoryService {
@@ -10,8 +11,12 @@ export class CategoryService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  findAll(): Promise<Category[]> {
-    return this.categoryRepository.find();
+  async findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Category[]> {
+    const options: any = {};
+    if (limit) options.take = limit;
+    if (offset) options.skip = offset;
+    if (orderOptions) options.order = orderOptions;
+    return this.categoryRepository.find(options);
   }
 
   async create(data: Partial<Category>): Promise<Category> {

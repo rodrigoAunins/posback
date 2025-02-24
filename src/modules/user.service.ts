@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
+import { OrderMap } from '../common/types';
 
 @Injectable()
 export class UserService {
@@ -10,8 +11,12 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<User[]> {
+    const options: any = {};
+    if (limit) options.take = limit;
+    if (offset) options.skip = offset;
+    if (orderOptions) options.order = orderOptions;
+    return this.userRepository.find(options);
   }
 
   async create(data: Partial<User>): Promise<User> {

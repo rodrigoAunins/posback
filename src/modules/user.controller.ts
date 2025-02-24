@@ -1,14 +1,29 @@
-import { Controller, Get, Post, Body, Delete, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, NotFoundException, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../entities/user.entity';
+import { OrderMap } from '../common/types';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  findAll(
+    @Query('limit') limit: string,
+    @Query('offset') offset: string,
+    @Query('order') order: string
+  ): Promise<User[]> {
+    const limitNum = limit ? parseInt(limit, 10) : undefined;
+    const offsetNum = offset ? parseInt(offset, 10) : undefined;
+
+    let orderOptions: OrderMap | undefined = undefined;
+    if (order) {
+      const [col, direction] = order.split(':');
+      const dir = direction?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+      orderOptions = { [col]: dir };
+    }
+
+    return this.userService.findAll(limitNum, offsetNum, orderOptions);
   }
 
   @Post()

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Brand } from '../entities/brand.entity';
+import { OrderMap } from '../common/types';
 
 @Injectable()
 export class BrandService {
@@ -10,17 +11,21 @@ export class BrandService {
     private readonly brandRepository: Repository<Brand>,
   ) {}
 
-  findAll(): Promise<Brand[]> {
-    return this.brandRepository.find();
+  findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Brand[]> {
+    const options: any = {};
+    if (limit) options.take = limit;
+    if (offset) options.skip = offset;
+    if (orderOptions) options.order = orderOptions;
+    return this.brandRepository.find(options);
   }
 
   async create(data: Partial<Brand>): Promise<Brand> {
     const brand = this.brandRepository.create(data);
-    // si no viene 'id', podrías generarlo (por ejemplo: brand.id = Date.now().toString())
+    // si no viene 'id', podrías generarlo
     if (!brand.id) {
       brand.id = Date.now().toString();
     }
-    brand.updatedAt = new Date(); 
+    brand.updatedAt = new Date();
     return this.brandRepository.save(brand);
   }
 
