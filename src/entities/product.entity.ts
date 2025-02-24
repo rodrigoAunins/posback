@@ -1,3 +1,4 @@
+// product.entity.ts
 import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity()
@@ -14,6 +15,7 @@ export class Product {
   @Column('float')
   price: number;
 
+  // Este stock siempre refleja el “stock total”.
   @Column('int')
   stock: number;
 
@@ -28,6 +30,9 @@ export class Product {
 
   @Column({ type: 'text', nullable: true })
   image?: string;
+
+  @Column({ type: 'text', nullable: true })
+  variantsJson: string | null; // en lugar de 'variantsJson?: string;'
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;

@@ -26,15 +26,18 @@ export class ProductController {
     return this.productService.findAll(limitNum, offsetNum, orderOptions);
   }
 
-  @Post()
-  create(@Body() data: Partial<Product>): Promise<Product> {
-    return this.productService.create(data);
-  }
+// product.controller.ts
+@Post()
+create(@Body() data: Partial<Product>) {
+  // data.variants vendrá del frontend
+  return this.productService.create(data);
+}
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Product>): Promise<Product> {
-    return this.productService.update(id, data);
-  }
+@Put(':id')
+update(@Param('id') id: string, @Body() data: Partial<Product>) {
+  return this.productService.update(id, data);
+}
+
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
