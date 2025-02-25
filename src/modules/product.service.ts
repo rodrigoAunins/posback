@@ -85,7 +85,17 @@ export class ProductService {
     // Ejecutamos la consulta
     return qb.getMany();
   }
+  
 
+  // Nuevo método para obtener un producto por ID
+  async findOne(id: string): Promise<Product> {
+    const product = await this.productRepository.findOne({ where: { id } });
+    if (!product) {
+      throw new NotFoundException(`Product not found with id ${id}`);
+    }
+    return product;
+  }
+  
   /**
    * Crear un producto
    */

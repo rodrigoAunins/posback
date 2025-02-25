@@ -43,6 +43,12 @@ export class ProductController {
     });
   }
 
+    // Nuevo endpoint para obtener un producto por ID
+    @Get(':id')
+    async findOne(@Param('id') id: string): Promise<Product> {
+      return this.productService.findOne(id);
+    }
+
   @Post()
   create(@Body() data: Partial<Product>) {
     return this.productService.create(data);
