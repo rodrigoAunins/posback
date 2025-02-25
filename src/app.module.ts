@@ -16,6 +16,7 @@ import { BrandModule } from './modules/brand.module';
 import { ProductModule } from './modules/product.module';
 import { SaleModule } from './modules/sale.module';
 import { SyncModule } from './modules/sync.module';
+import { ExcelImportModule } from './excel-import/excel-import.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { SyncModule } from './modules/sync.module';
     ProductModule,
     SaleModule,
     SyncModule,
+    ExcelImportModule,
   ],
 })
 export class AppModule {}
