@@ -27,6 +27,7 @@ export class SaleService {
 
   async create(saleData: Partial<Sale>): Promise<Sale | null> {
     const sale = this.saleRepo.create({
+      id: saleData.id, // Se agrega el id enviado desde el cliente
       date: saleData.date || new Date(),
       cashierId: saleData.cashierId,
       sessionId: saleData.sessionId,
@@ -35,6 +36,7 @@ export class SaleService {
       change: saleData.change,
       paymentMethod: saleData.paymentMethod,
     });
+    
 
     const savedSale = await this.saleRepo.save(sale);
 
