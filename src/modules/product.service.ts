@@ -1,9 +1,18 @@
-// product.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { OrderMap } from '../common/types';
+
+interface FindAllParams {
+  limit?: number;
+  offset?: number;
+  orderOptions?: OrderMap;
+  searchTerm?: string;
+  brandId?: string;
+  categoryId?: string;
+  stockOnly?: boolean;
+}
 
 @Injectable()
 export class ProductService {
@@ -12,20 +21,80 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  async findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Product[]> {
-    const options: any = {};
-    if (limit) options.take = limit;
-    if (offset) options.skip = offset;
-    if (orderOptions) options.order = orderOptions;
-    return this.productRepository.find(options);
+  /**
+   * Busca productos con soporte para:
+   * - paginación (limit, offset)
+   * - orden (orderOptions)
+   * - búsqueda global (searchTerm en name/barcode)
+   * - filtro por brandId
+   * - filtro por categoryId
+   * - filtro opcional de "solo con stock" (stock>0)
+   */
+  async findAll(params: FindAllParams = {}): Promise<Product[]> {
+    const {
+      limit,
+      offset,
+      orderOptions,
+      searchTerm,
+      brandId,
+      categoryId,
+      stockOnly,
+    } = params;
+
+    // Creamos un QueryBuilder
+    const qb = this.productRepository.createQueryBuilder('product');
+
+    // Filtro por searchTerm (name/barcode)
+    if (searchTerm) {
+      qb.andWhere('(product.name ILIKE :st OR product.barcode ILIKE :st)', {
+        st: `%${searchTerm}%`,
+      });
+    }
+
+    // Filtro por brandId
+    if (brandId) {
+      qb.andWhere('product.brandId = :brandId', { brandId });
+    }
+
+    // Filtro por categoryId
+    if (categoryId) {
+      qb.andWhere('product.categoryId = :categoryId', { categoryId });
+    }
+
+    // Solo con stock
+    if (stockOnly) {
+      qb.andWhere('product.stock > 0');
+    }
+
+    // Paginación
+    if (limit) {
+      qb.take(limit);
+    }
+    if (offset) {
+      qb.skip(offset);
+    }
+
+    // Orden
+    if (orderOptions) {
+      // Ejemplo: { name: 'ASC' } => qb.orderBy('product.name', 'ASC')
+      Object.entries(orderOptions).forEach(([col, dir]) => {
+        qb.addOrderBy(`product.${col}`, dir as 'ASC' | 'DESC');
+      });
+    }
+
+    // Ejecutamos la consulta
+    return qb.getMany();
   }
 
+  /**
+   * Crear un producto
+   */
   async create(data: Partial<Product>): Promise<Product> {
     const product = new Product();
     // Genera un ID si no viene
     product.id = data.id ?? Date.now().toString();
 
-    // Asignar sólo si no es undefined
+    // Asignar campos
     if (data.name !== undefined) product.name = data.name;
     if (data.description !== undefined) product.description = data.description;
     if (data.price !== undefined) product.price = data.price;
@@ -36,15 +105,13 @@ export class ProductService {
     if (data.deleted !== undefined) product.deleted = data.deleted;
 
     // Manejo de variantes
-    const anyData = data as any; // para acceder a data.variants
+    const anyData = data as any;
     if (anyData.variants && Array.isArray(anyData.variants) && anyData.variants.length > 0) {
       product.variantsJson = JSON.stringify(anyData.variants);
-      // stock = suma de las variantes
       const sumVariants = anyData.variants.reduce((acc: number, v: any) => acc + (v.stock || 0), 0);
       product.stock = sumVariants;
     } else {
       product.variantsJson = null;
-      // Asignar stock general si no es undefined
       if (data.stock !== undefined) {
         product.stock = data.stock;
       } else {
@@ -56,6 +123,9 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
+  /**
+   * Actualizar un producto
+   */
   async update(id: string, data: Partial<Product>): Promise<Product> {
     const product = await this.productRepository.findOne({ where: { id } });
     if (!product) {
@@ -87,6 +157,9 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
+  /**
+   * Eliminar un producto
+   */
   async delete(id: string): Promise<boolean> {
     const product = await this.productRepository.findOne({ where: { id } });
     if (!product) {

@@ -8,36 +8,50 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  findAll(
+  async findAll(
     @Query('limit') limit: string,
     @Query('offset') offset: string,
-    @Query('order') order: string
+    @Query('order') order: string,
+    @Query('searchTerm') searchTerm: string,
+    @Query('brandId') brandId: string,
+    @Query('categoryId') categoryId: string,
+    @Query('stockOnly') stockOnly: string
   ): Promise<Product[]> {
+    // Parseamos limit/offset
     const limitNum = limit ? parseInt(limit, 10) : undefined;
     const offsetNum = offset ? parseInt(offset, 10) : undefined;
 
-    let orderOptions: OrderMap | undefined = undefined;
+    // Parseamos order => { col: 'ASC'|'DESC' }
+    let orderOptions: OrderMap | undefined;
     if (order) {
       const [col, direction] = order.split(':');
       const dir = direction?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
       orderOptions = { [col]: dir };
     }
 
-    return this.productService.findAll(limitNum, offsetNum, orderOptions);
+    // stockOnly => si es '1' o 'true', lo convertimos a boolean
+    const stockOnlyBool = (stockOnly === '1' || stockOnly?.toLowerCase() === 'true');
+
+    return this.productService.findAll({
+      limit: limitNum,
+      offset: offsetNum,
+      orderOptions,
+      searchTerm,
+      brandId,
+      categoryId,
+      stockOnly: stockOnlyBool,
+    });
   }
 
-// product.controller.ts
-@Post()
-create(@Body() data: Partial<Product>) {
-  // data.variants vendrá del frontend
-  return this.productService.create(data);
-}
+  @Post()
+  create(@Body() data: Partial<Product>) {
+    return this.productService.create(data);
+  }
 
-@Put(':id')
-update(@Param('id') id: string, @Body() data: Partial<Product>) {
-  return this.productService.update(id, data);
-}
-
+  @Put(':id')
+  update(@Param('id') id: string, @Body() data: Partial<Product>) {
+    return this.productService.update(id, data);
+  }
 
   @Delete(':id')
   async delete(@Param('id') id: string) {

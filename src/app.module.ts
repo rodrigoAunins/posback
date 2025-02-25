@@ -29,6 +29,7 @@ import { SyncModule } from './modules/sync.module';
       username: 'postgres',
       password: 'cMDPLrMbRYTkCISdNYjvFERgEifVSZrI',
       database: 'railway',
+      
 
       // Si tu DB requiere SSL, activa:
       ssl: {
