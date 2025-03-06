@@ -11,13 +11,24 @@ export class CategoryService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  async findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Category[]> {
-    const options: any = {};
-    if (limit) options.take = limit;
-    if (offset) options.skip = offset;
-    if (orderOptions) options.order = orderOptions;
-    return this.categoryRepository.find(options);
+// category.service.ts
+
+async findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Category[]> {
+  const qb = this.categoryRepository.createQueryBuilder('category');
+  qb.where('category.deleted = false');  // oculta categorías borradas
+
+  if (limit) qb.take(limit);
+  if (offset) qb.skip(offset);
+
+  if (orderOptions) {
+    Object.entries(orderOptions).forEach(([col, dir]) => {
+      qb.addOrderBy(`category.${col}`, dir as 'ASC' | 'DESC');
+    });
   }
+
+  return qb.getMany();
+}
+
 
   async create(data: Partial<Category>): Promise<Category> {
     const category = this.categoryRepository.create(data);

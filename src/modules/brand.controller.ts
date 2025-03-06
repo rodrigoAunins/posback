@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, Param, Put, NotFoundException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, NotFoundException, Query } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { Brand } from '../entities/brand.entity';
 import { OrderMap } from '../common/types';
@@ -11,7 +11,9 @@ export class BrandController {
   findAll(
     @Query('limit') limit: string,
     @Query('offset') offset: string,
-    @Query('order') order: string
+    @Query('order') order: string,
+    @Query('searchTerm') searchTerm: string,
+    @Query('categoryId') categoryId: string,
   ): Promise<Brand[]> {
     const limitNum = limit ? parseInt(limit, 10) : undefined;
     const offsetNum = offset ? parseInt(offset, 10) : undefined;
@@ -23,7 +25,13 @@ export class BrandController {
       orderOptions = { [col]: dir };
     }
 
-    return this.brandService.findAll(limitNum, offsetNum, orderOptions);
+    return this.brandService.findAll({
+      limit: limitNum,
+      offset: offsetNum,
+      orderOptions,
+      searchTerm,
+      categoryId,
+    });
   }
 
   @Post()

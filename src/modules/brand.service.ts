@@ -4,6 +4,14 @@ import { Repository } from 'typeorm';
 import { Brand } from '../entities/brand.entity';
 import { OrderMap } from '../common/types';
 
+interface FindAllParams {
+  limit?: number;
+  offset?: number;
+  orderOptions?: OrderMap;
+  searchTerm?: string;
+  categoryId?: string;
+}
+
 @Injectable()
 export class BrandService {
   constructor(
@@ -11,17 +19,47 @@ export class BrandService {
     private readonly brandRepository: Repository<Brand>,
   ) {}
 
-  findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Brand[]> {
-    const options: any = {};
-    if (limit) options.take = limit;
-    if (offset) options.skip = offset;
-    if (orderOptions) options.order = orderOptions;
-    return this.brandRepository.find(options);
+  async findAll(params: FindAllParams = {}): Promise<Brand[]> {
+    const {
+      limit,
+      offset,
+      orderOptions,
+      searchTerm,
+      categoryId,
+    } = params;
+
+    // Creamos QueryBuilder para filtrar en la DB
+    const qb = this.brandRepository.createQueryBuilder('brand');
+
+    // Evitar mostrar marcas borradas, si deseas
+    qb.where('brand.deleted = false');
+
+    // Filtrar por categoryId
+    if (categoryId) {
+      qb.andWhere('brand.categoryId = :catId', { catId: categoryId });
+    }
+
+    // Filtrar por searchTerm en el nombre
+    if (searchTerm) {
+      qb.andWhere('brand.name ILIKE :term', { term: `%${searchTerm}%` });
+    }
+
+    // Paginación
+    if (limit) qb.take(limit);
+    if (offset) qb.skip(offset);
+
+    // Orden
+    if (orderOptions) {
+      Object.entries(orderOptions).forEach(([col, dir]) => {
+        qb.addOrderBy(`brand.${col}`, dir as 'ASC' | 'DESC');
+      });
+    }
+
+    return qb.getMany();
   }
 
   async create(data: Partial<Brand>): Promise<Brand> {
     const brand = this.brandRepository.create(data);
-    // si no viene 'id', podrías generarlo
     if (!brand.id) {
       brand.id = Date.now().toString();
     }
@@ -44,6 +82,7 @@ export class BrandService {
     if (!brand) {
       return false;
     }
+    // Opcional: si quieres borrado lógico, set brand.deleted = true y save
     await this.brandRepository.remove(brand);
     return true;
   }
