@@ -32,4 +32,8 @@ export class Sale {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
+
+  // NUEVO: indica si la venta está cancelada
+  @Column({ type: 'boolean', default: false, nullable: true })
+  isCancelled?: boolean;
 }
