@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Patch } from '@nestjs/common';
 import { SaleService } from './sale.service';
 import { Sale } from '../entities/sale.entity';
 import { OrderMap } from '../common/types';
@@ -29,5 +29,16 @@ export class SaleController {
   @Post()
   create(@Body() saleData: Partial<Sale>) {
     return this.saleService.create(saleData);
+  }
+
+  @Patch(':id/cancel')
+  async cancelSale(@Param('id') saleId: string) {
+    console.log(`[Controller] Recibida petición para cancelar venta con ID: ${saleId}`);
+    const updatedSale = await this.saleService.cancelSale(saleId);
+    console.log(`[Controller] Venta ${saleId} cancelada correctamente. isCancelled=${updatedSale.isCancelled}`);
+    return {
+      message: `Sale ${saleId} cancelled successfully`,
+      cancelledSale: updatedSale,
+    };
   }
 }

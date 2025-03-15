@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Sale } from '../entities/sale.entity';
 import { Repository } from 'typeorm';
@@ -59,4 +59,25 @@ export class SaleService {
       relations: ['items'],
     });
   }
+
+  async cancelSale(saleId: string): Promise<Sale> {
+    console.log(`[Service] Buscando venta con ID: ${saleId}`);
+    const sale = await this.saleRepo.findOne({
+      where: { id: saleId },
+    });
+    if (!sale) {
+      console.error(`[Service] Venta ${saleId} no encontrada`);
+      throw new NotFoundException(`Sale not found with id: ${saleId}`);
+    }
+  
+    sale.isCancelled = true;
+    console.log(`[Service] Marcando venta ${saleId} como cancelada...`);
+    const saved = await this.saleRepo.save(sale);
+    console.log(`[Service] Venta ${saleId} guardada con isCancelled=${saved.isCancelled}`);
+    return saved;
+  }
+  
+
+
+  
 }
