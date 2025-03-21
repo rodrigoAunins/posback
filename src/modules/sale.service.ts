@@ -29,7 +29,7 @@ export class SaleService {
     const sale = this.saleRepo.create({
       id: saleData.id, // Se agrega el id enviado desde el cliente
       // Se resta 3 horas a la fecha actual para ajustarse a la zona horaria de Argentina
-      date: saleData.date || new Date(Date.now() - 3 * 60 * 60 * 1000),
+      date: saleData.date || new Date(Date.now()),
       cashierId: saleData.cashierId,
       sessionId: saleData.sessionId,
       total: saleData.total,
