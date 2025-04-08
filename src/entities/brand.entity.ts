@@ -1,4 +1,11 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Local } from './local.entity';
 
 @Entity()
 export class Brand {
@@ -19,4 +26,11 @@ export class Brand {
 
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
+
+  @ManyToOne(() => Local, (local) => local.brands, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'localId' })
+  local?: Local;
 }

@@ -1,5 +1,13 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { SaleItem } from './sale-item.entity';
+import { Local } from './local.entity';
 
 @Entity()
 export class Sale {
@@ -33,7 +41,13 @@ export class Sale {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
-  // NUEVO: indica si la venta está cancelada
   @Column({ type: 'boolean', default: false, nullable: true })
   isCancelled?: boolean;
+
+  @ManyToOne(() => Local, (local) => local.sales, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'localId' })
+  local?: Local;
 }

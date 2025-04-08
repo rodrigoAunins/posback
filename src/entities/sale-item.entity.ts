@@ -6,6 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Sale } from './sale.entity';
+import { Local } from './local.entity';
 
 @Entity()
 export class SaleItem {
@@ -33,4 +34,11 @@ export class SaleItem {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
+
+  @ManyToOne(() => Local, (local) => local.saleItems, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'localId' })
+  local?: Local;
 }

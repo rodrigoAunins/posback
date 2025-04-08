@@ -1,5 +1,11 @@
-// product.entity.ts
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Local } from './local.entity';
 
 @Entity()
 export class Product {
@@ -15,7 +21,7 @@ export class Product {
   @Column('float')
   price: number;
 
-  // Este stock siempre refleja el “stock total”.
+  // Stock total
   @Column('int')
   stock: number;
 
@@ -32,11 +38,18 @@ export class Product {
   image?: string;
 
   @Column({ type: 'text', nullable: true })
-  variantsJson: string | null; // en lugar de 'variantsJson?: string;'
+  variantsJson: string | null;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
+
+  @ManyToOne(() => Local, (local) => local.products, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'localId' })
+  local?: Local;
 }

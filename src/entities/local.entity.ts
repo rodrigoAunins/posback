@@ -38,4 +38,6 @@ export class Local {
 
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
+  categories: any;
+  products: any;
 }
