@@ -6,14 +6,18 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Configurar CORS correctamente
-  app.enableCors();
+  // Habilitar CORS desde todos los orígenes
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
 
-  // Middleware de seguridad - Helmet (Desactiva CSP temporalmente si hay problemas)
+  // Middleware de seguridad - Helmet
   app.use(
     helmet({
-      contentSecurityPolicy: false, // Deshabilita CSP para evitar bloqueos (ajustar en producción)
-    })
+      contentSecurityPolicy: false, // Ajustar en producción
+    }),
   );
 
   // Permitir grandes volúmenes de datos en request body
