@@ -18,6 +18,7 @@ import { ProductModule } from './modules/product.module';
 import { SaleModule } from './modules/sale.module';
 import { SyncModule } from './modules/sync.module';
 import { ExcelImportModule } from './excel-import/excel-import.module';
+import { LocalModule } from './modules/local.module';  // <-- Agregado
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { ExcelImportModule } from './excel-import/excel-import.module';
     BrandModule,
     ProductModule,
     SaleModule,
+    LocalModule,  // <-- Asegurarse de que el módulo de locales esté importado
     SyncModule,
     ExcelImportModule,
   ],
