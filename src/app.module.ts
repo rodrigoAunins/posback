@@ -8,6 +8,7 @@ import { Brand } from './entities/brand.entity';
 import { Product } from './entities/product.entity';
 import { Sale } from './entities/sale.entity';
 import { SaleItem } from './entities/sale-item.entity';
+import { Local } from './entities/local.entity';
 
 // Módulos
 import { UserModule } from './modules/user.module';
@@ -26,11 +27,10 @@ import { ExcelImportModule } from './excel-import/excel-import.module';
 
       // PON tus datos REALES de Railway:
       host: 'postgres.railway.internal',  // Ejemplo
-      port: 5432,                                     // Puede variar
+      port: 5432,                         // Puede variar
       username: 'postgres',
       password: 'cMDPLrMbRYTkCISdNYjvFERgEifVSZrI',
       database: 'railway',
-      
 
       // Si tu DB requiere SSL, activa:
       ssl: {
@@ -44,8 +44,9 @@ import { ExcelImportModule } from './excel-import/excel-import.module';
         Product,
         Sale,
         SaleItem,
+        Local, // Se ha agregado la entidad Local
       ],
-      synchronize: true, // en prod se suele desactivar
+      synchronize: true, // En producción, se recomienda usar migraciones
     }),
 
     // Módulos
