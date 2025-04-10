@@ -11,11 +11,19 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<User[]> {
-    const options: any = {};
+  findAll(limit?: number, offset?: number, orderOptions?: OrderMap, localId?: number): Promise<User[]> {
+    const options: any = {
+      where: {},
+    };
+
+    if (localId !== undefined) {
+      options.where.localId = localId; // 👈 agregado
+    }
+
     if (limit) options.take = limit;
     if (offset) options.skip = offset;
     if (orderOptions) options.order = orderOptions;
+
     return this.userRepository.find(options);
   }
 
@@ -25,9 +33,7 @@ export class UserService {
       user.id = Date.now().toString();
     }
 
-    // 👇 Lógica mínima solicitada
     user.localId = data.localId ?? 1;
-
     user.updatedAt = new Date();
     return this.userRepository.save(user);
   }

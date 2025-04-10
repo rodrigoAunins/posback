@@ -10,6 +10,7 @@ interface FindAllParams {
   orderOptions?: OrderMap;
   searchTerm?: string;
   categoryId?: string;
+  localId?: number; // 👈 agregado
 }
 
 @Injectable()
@@ -26,6 +27,7 @@ export class BrandService {
       orderOptions,
       searchTerm,
       categoryId,
+      localId, // 👈 agregado
     } = params;
 
     const qb = this.brandRepository.createQueryBuilder('brand');
@@ -38,6 +40,10 @@ export class BrandService {
 
     if (searchTerm) {
       qb.andWhere('brand.name ILIKE :term', { term: `%${searchTerm}%` });
+    }
+
+    if (localId !== undefined) {
+      qb.andWhere('brand.localId = :localId', { localId }); // 👈 agregado
     }
 
     if (limit) qb.take(limit);
@@ -59,9 +65,7 @@ export class BrandService {
       brand.id = Date.now().toString();
     }
 
-    // Si no tiene localId, le ponemos 1
     brand.localId = data.localId ?? 1;
-
     brand.updatedAt = new Date();
     return this.brandRepository.save(brand);
   }
@@ -74,10 +78,7 @@ export class BrandService {
     }
 
     Object.assign(brand, data);
-
-    // Si se borra o no se manda localId, también se setea como 1
     brand.localId = data.localId ?? 1;
-
     brand.updatedAt = new Date();
     return this.brandRepository.save(brand);
   }

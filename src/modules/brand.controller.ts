@@ -14,9 +14,11 @@ export class BrandController {
     @Query('order') order: string,
     @Query('searchTerm') searchTerm: string,
     @Query('categoryId') categoryId: string,
+    @Query('localId') localId: string, // 👈 agregado
   ): Promise<Brand[]> {
     const limitNum = limit ? parseInt(limit, 10) : undefined;
     const offsetNum = offset ? parseInt(offset, 10) : undefined;
+    const localIdNum = localId ? parseInt(localId, 10) : undefined;
 
     let orderOptions: OrderMap | undefined = undefined;
     if (order) {
@@ -31,6 +33,7 @@ export class BrandController {
       orderOptions,
       searchTerm,
       categoryId,
+      localId: localIdNum, // 👈 agregado
     });
   }
 

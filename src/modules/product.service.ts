@@ -12,6 +12,7 @@ interface FindAllParams {
   brandId?: string;
   categoryId?: string;
   stockOnly?: boolean;
+  localId?: number; // 👈 agregado
 }
 
 @Injectable()
@@ -39,52 +40,49 @@ export class ProductService {
       brandId,
       categoryId,
       stockOnly,
+      localId, // 👈 agregado
     } = params;
-
-    // Creamos un QueryBuilder
+  
     const qb = this.productRepository.createQueryBuilder('product');
-
-    // Filtro por searchTerm (name/barcode)
+  
     if (searchTerm) {
       qb.andWhere('(product.name ILIKE :st OR product.barcode ILIKE :st)', {
         st: `%${searchTerm}%`,
       });
     }
-
-    // Filtro por brandId
+  
     if (brandId) {
       qb.andWhere('product.brandId = :brandId', { brandId });
     }
-
-    // Filtro por categoryId
+  
     if (categoryId) {
       qb.andWhere('product.categoryId = :categoryId', { categoryId });
     }
-
-    // Solo con stock
+  
     if (stockOnly) {
       qb.andWhere('product.stock > 0');
     }
-
-    // Paginación
+  
+    if (localId !== undefined) {
+      qb.andWhere('product.localId = :localId', { localId }); // 👈 filtro agregado
+    }
+  
     if (limit) {
       qb.take(limit);
     }
     if (offset) {
       qb.skip(offset);
     }
-
-    // Orden
+  
     if (orderOptions) {
-      // Ejemplo: { name: 'ASC' } => qb.orderBy('product.name', 'ASC')
       Object.entries(orderOptions).forEach(([col, dir]) => {
         qb.addOrderBy(`product.${col}`, dir as 'ASC' | 'DESC');
       });
     }
-
-    // Ejecutamos la consulta
+  
     return qb.getMany();
   }
+  
 
   // Nuevo método para obtener un producto por ID
   async findOne(id: string): Promise<Product> {

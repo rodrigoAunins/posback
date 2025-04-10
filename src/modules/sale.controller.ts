@@ -11,10 +11,12 @@ export class SaleController {
   findAll(
     @Query('limit') limit: string,
     @Query('offset') offset: string,
-    @Query('order') order: string
+    @Query('order') order: string,
+    @Query('localId') localId: string, // 👈 agregado
   ): Promise<Sale[]> {
     const limitNum = limit ? parseInt(limit, 10) : undefined;
     const offsetNum = offset ? parseInt(offset, 10) : undefined;
+    const localIdNum = localId ? parseInt(localId, 10) : undefined;
 
     let orderOptions: OrderMap | undefined = undefined;
     if (order) {
@@ -23,7 +25,7 @@ export class SaleController {
       orderOptions = { [col]: dir };
     }
 
-    return this.saleService.findAll(limitNum, offsetNum, orderOptions);
+    return this.saleService.findAll(limitNum, offsetNum, orderOptions, localIdNum); // 👈 agregado
   }
 
   @Post()

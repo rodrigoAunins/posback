@@ -15,13 +15,13 @@ export class ProductController {
     @Query('searchTerm') searchTerm: string,
     @Query('brandId') brandId: string,
     @Query('categoryId') categoryId: string,
-    @Query('stockOnly') stockOnly: string
+    @Query('stockOnly') stockOnly: string,
+    @Query('localId') localId: string // 👈 agregado
   ): Promise<Product[]> {
-    // Parseamos limit/offset
     const limitNum = limit ? parseInt(limit, 10) : undefined;
     const offsetNum = offset ? parseInt(offset, 10) : undefined;
+    const localIdNum = localId ? parseInt(localId, 10) : undefined;
 
-    // Parseamos order => { col: 'ASC'|'DESC' }
     let orderOptions: OrderMap | undefined;
     if (order) {
       const [col, direction] = order.split(':');
@@ -29,7 +29,6 @@ export class ProductController {
       orderOptions = { [col]: dir };
     }
 
-    // stockOnly => si es '1' o 'true', lo convertimos a boolean
     const stockOnlyBool = (stockOnly === '1' || stockOnly?.toLowerCase() === 'true');
 
     return this.productService.findAll({
@@ -40,14 +39,14 @@ export class ProductController {
       brandId,
       categoryId,
       stockOnly: stockOnlyBool,
+      localId: localIdNum, // 👈 agregado
     });
   }
 
-    // Nuevo endpoint para obtener un producto por ID
-    @Get(':id')
-    async findOne(@Param('id') id: string): Promise<Product> {
-      return this.productService.findOne(id);
-    }
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<Product> {
+    return this.productService.findOne(id);
+  }
 
   @Post()
   create(@Body() data: Partial<Product>) {

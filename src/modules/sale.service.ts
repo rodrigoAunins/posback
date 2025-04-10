@@ -14,10 +14,16 @@ export class SaleService {
     private saleItemRepo: Repository<SaleItem>,
   ) {}
 
-  findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Sale[]> {
+  findAll(limit?: number, offset?: number, orderOptions?: OrderMap, localId?: number): Promise<Sale[]> {
     const options: any = {
       relations: ['items'],
+      where: {},
     };
+
+    if (localId !== undefined) {
+      options.where.localId = localId; // 👈 agregado
+    }
+
     if (limit) options.take = limit;
     if (offset) options.skip = offset;
     if (orderOptions) options.order = orderOptions;
@@ -35,9 +41,7 @@ export class SaleService {
       amountPaid: saleData.amountPaid,
       change: saleData.change,
       paymentMethod: saleData.paymentMethod,
-
-      // 👇 Asignación de localId (cambio mínimo)
-      localId: saleData.localId ?? 1,
+      localId: saleData.localId ?? 1, // 👈 mantiene lógica
     });
 
     const savedSale = await this.saleRepo.save(sale);
@@ -51,9 +55,7 @@ export class SaleService {
           originalPrice: item.originalPrice,
           quantity: item.quantity,
           sale: savedSale,
-
-          // 👇 Asignación de localId en cada item (cambio mínimo)
-          localId: item.localId ?? saleData.localId ?? 1,
+          localId: item.localId ?? saleData.localId ?? 1, // 👈 idem para ítems
         }),
       );
       await this.saleItemRepo.save(saleItems);

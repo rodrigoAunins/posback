@@ -11,9 +11,18 @@ export class CategoryService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  async findAll(limit?: number, offset?: number, orderOptions?: OrderMap): Promise<Category[]> {
+  async findAll(
+    limit?: number,
+    offset?: number,
+    orderOptions?: OrderMap,
+    localId?: number, // 👈 agregado
+  ): Promise<Category[]> {
     const qb = this.categoryRepository.createQueryBuilder('category');
     qb.where('category.deleted = false'); // oculta categorías borradas
+
+    if (localId !== undefined) {
+      qb.andWhere('category.localId = :localId', { localId }); // 👈 filtro agregado
+    }
 
     if (limit) qb.take(limit);
     if (offset) qb.skip(offset);
@@ -34,9 +43,7 @@ export class CategoryService {
       category.id = Date.now().toString();
     }
 
-    // Default localId = 1 si no viene definido
     category.localId = data.localId ?? 1;
-
     category.updatedAt = new Date();
     return this.categoryRepository.save(category);
   }
@@ -48,10 +55,7 @@ export class CategoryService {
     }
 
     Object.assign(category, data);
-
-    // Mantener lógica de default localId = 1
     category.localId = data.localId ?? 1;
-
     category.updatedAt = new Date();
     return this.categoryRepository.save(category);
   }
