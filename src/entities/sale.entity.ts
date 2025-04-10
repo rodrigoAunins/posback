@@ -44,6 +44,9 @@ export class Sale {
   @Column({ type: 'boolean', default: false, nullable: true })
   isCancelled?: boolean;
 
+  @Column({ nullable: true }) // 👈 Igual que arriba, necesario para usar localId
+  localId?: number;
+
   @ManyToOne(() => Local, (local) => local.sales, {
     nullable: true,
     onDelete: 'SET NULL',

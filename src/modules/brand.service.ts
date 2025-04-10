@@ -28,27 +28,21 @@ export class BrandService {
       categoryId,
     } = params;
 
-    // Creamos QueryBuilder para filtrar en la DB
     const qb = this.brandRepository.createQueryBuilder('brand');
 
-    // Evitar mostrar marcas borradas, si deseas
     qb.where('brand.deleted = false');
 
-    // Filtrar por categoryId
     if (categoryId) {
       qb.andWhere('brand.categoryId = :catId', { catId: categoryId });
     }
 
-    // Filtrar por searchTerm en el nombre
     if (searchTerm) {
       qb.andWhere('brand.name ILIKE :term', { term: `%${searchTerm}%` });
     }
 
-    // Paginación
     if (limit) qb.take(limit);
     if (offset) qb.skip(offset);
 
-    // Orden
     if (orderOptions) {
       Object.entries(orderOptions).forEach(([col, dir]) => {
         qb.addOrderBy(`brand.${col}`, dir as 'ASC' | 'DESC');
@@ -60,19 +54,30 @@ export class BrandService {
 
   async create(data: Partial<Brand>): Promise<Brand> {
     const brand = this.brandRepository.create(data);
+
     if (!brand.id) {
       brand.id = Date.now().toString();
     }
+
+    // Si no tiene localId, le ponemos 1
+    brand.localId = data.localId ?? 1;
+
     brand.updatedAt = new Date();
     return this.brandRepository.save(brand);
   }
 
   async update(id: string, data: Partial<Brand>): Promise<Brand> {
     const brand = await this.brandRepository.findOne({ where: { id } });
+
     if (!brand) {
       throw new NotFoundException(`Brand not found with id ${id}`);
     }
+
     Object.assign(brand, data);
+
+    // Si se borra o no se manda localId, también se setea como 1
+    brand.localId = data.localId ?? 1;
+
     brand.updatedAt = new Date();
     return this.brandRepository.save(brand);
   }
@@ -82,7 +87,7 @@ export class BrandService {
     if (!brand) {
       return false;
     }
-    // Opcional: si quieres borrado lógico, set brand.deleted = true y save
+
     await this.brandRepository.remove(brand);
     return true;
   }

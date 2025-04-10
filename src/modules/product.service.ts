@@ -85,7 +85,6 @@ export class ProductService {
     // Ejecutamos la consulta
     return qb.getMany();
   }
-  
 
   // Nuevo método para obtener un producto por ID
   async findOne(id: string): Promise<Product> {
@@ -95,7 +94,7 @@ export class ProductService {
     }
     return product;
   }
-  
+
   /**
    * Crear un producto
    */
@@ -128,6 +127,9 @@ export class ProductService {
         product.stock = 0; // default
       }
     }
+
+    // 👇 CAMBIO MÍNIMO AQUÍ
+    product.localId = data.localId ?? 1;
 
     product.updatedAt = new Date();
     return this.productRepository.save(product);
@@ -162,6 +164,9 @@ export class ProductService {
         product.stock = data.stock;
       }
     }
+
+    // 👇 CAMBIO MÍNIMO AQUÍ TAMBIÉN
+    product.localId = data.localId ?? 1;
 
     product.updatedAt = new Date();
     return this.productRepository.save(product);

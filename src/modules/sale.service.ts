@@ -27,8 +27,7 @@ export class SaleService {
 
   async create(saleData: Partial<Sale>): Promise<Sale | null> {
     const sale = this.saleRepo.create({
-      id: saleData.id, // Se agrega el id enviado desde el cliente
-      // Se resta 3 horas a la fecha actual para ajustarse a la zona horaria de Argentina
+      id: saleData.id,
       date: saleData.date || new Date(Date.now()),
       cashierId: saleData.cashierId,
       sessionId: saleData.sessionId,
@@ -36,8 +35,11 @@ export class SaleService {
       amountPaid: saleData.amountPaid,
       change: saleData.change,
       paymentMethod: saleData.paymentMethod,
+
+      // 👇 Asignación de localId (cambio mínimo)
+      localId: saleData.localId ?? 1,
     });
-    
+
     const savedSale = await this.saleRepo.save(sale);
 
     if (saleData.items && saleData.items.length > 0) {
@@ -49,6 +51,9 @@ export class SaleService {
           originalPrice: item.originalPrice,
           quantity: item.quantity,
           sale: savedSale,
+
+          // 👇 Asignación de localId en cada item (cambio mínimo)
+          localId: item.localId ?? saleData.localId ?? 1,
         }),
       );
       await this.saleItemRepo.save(saleItems);
@@ -69,15 +74,11 @@ export class SaleService {
       console.error(`[Service] Venta ${saleId} no encontrada`);
       throw new NotFoundException(`Sale not found with id: ${saleId}`);
     }
-  
+
     sale.isCancelled = true;
     console.log(`[Service] Marcando venta ${saleId} como cancelada...`);
     const saved = await this.saleRepo.save(sale);
     console.log(`[Service] Venta ${saleId} guardada con isCancelled=${saved.isCancelled}`);
     return saved;
   }
-  
-
-
-  
 }

@@ -24,6 +24,9 @@ export class Category {
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
 
+  @Column({ nullable: true }) // 👈 Esto es lo que te hacía falta
+  localId?: number;
+
   @ManyToOne(() => Local, (local) => local.categories, {
     nullable: true,
     onDelete: 'SET NULL',

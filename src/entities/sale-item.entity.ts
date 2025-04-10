@@ -35,6 +35,9 @@ export class SaleItem {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
+  @Column({ nullable: true }) // 👈 NECESARIO para que funcione el .localId
+  localId?: number;
+
   @ManyToOne(() => Local, (local) => local.saleItems, {
     nullable: true,
     onDelete: 'SET NULL',

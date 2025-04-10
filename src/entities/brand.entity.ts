@@ -27,6 +27,9 @@ export class Brand {
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
 
+  @Column({ nullable: true }) // <--- ESTO es lo que te faltaba
+  localId?: number;
+
   @ManyToOne(() => Local, (local) => local.brands, {
     nullable: true,
     onDelete: 'SET NULL',

@@ -27,6 +27,9 @@ export class User {
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
 
+  @Column({ nullable: true }) // 👈 agregado: campo explícito
+  localId?: number;
+
   @ManyToOne(() => Local, (local) => local.users, {
     nullable: true,
     onDelete: 'SET NULL',

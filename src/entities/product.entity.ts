@@ -21,7 +21,6 @@ export class Product {
   @Column('float')
   price: number;
 
-  // Stock total
   @Column('int')
   stock: number;
 
@@ -45,6 +44,9 @@ export class Product {
 
   @Column({ type: 'boolean', default: false })
   deleted: boolean;
+
+  @Column({ nullable: true }) // 👈 Este campo te faltaba
+  localId?: number;
 
   @ManyToOne(() => Local, (local) => local.products, {
     nullable: true,

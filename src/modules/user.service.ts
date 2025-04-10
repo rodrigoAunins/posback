@@ -24,6 +24,10 @@ export class UserService {
     if (!user.id) {
       user.id = Date.now().toString();
     }
+
+    // 👇 Lógica mínima solicitada
+    user.localId = data.localId ?? 1;
+
     user.updatedAt = new Date();
     return this.userRepository.save(user);
   }
